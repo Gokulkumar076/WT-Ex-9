@@ -1,0 +1,713 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FreelanceDB - Database Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        header {
+            background: #1e3a8a;
+            color: white;
+            padding: 22px;
+            text-align: center;
+        }
+
+        nav {
+            background: #2563eb;
+            padding: 13px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px #00000012;
+        }
+
+        h2 {
+            color: #1e3a8a;
+        }
+
+        input, select {
+            padding: 11px;
+            margin: 7px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        button {
+            padding: 11px 16px;
+            margin: 5px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1e40af;
+        }
+
+        .delete {
+            background: #dc2626;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: #dbeafe;
+            padding: 18px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .table-box {
+            overflow-x: auto;
+        }
+
+        #log {
+            background: #0f172a;
+            color: #4ade80;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 70px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        @media(max-width: 600px) {
+            nav a {
+                display: inline-block;
+                margin: 7px;
+            }
+
+            .container {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>FreelanceDB</h1>
+    <p>Freelancer Database Management System</p>
+</header>
+
+<nav>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#insert">Insert</a>
+    <a href="#records">Records</a>
+    <a href="#queries">Queries</a>
+    <a href="#manage">Manage</a>
+</nav>
+
+<div class="container">
+
+    <!-- DATABASE -->
+    <section class="card" id="dashboard">
+        <h2>Database Information</h2>
+
+        <p>Database: <b>FreelanceDB</b></p>
+        <p>Collection: <b>freelancers</b></p>
+
+        <button onclick="createDatabase()">
+            Create Database
+        </button>
+
+        <button onclick="createCollection()">
+            Create Collection
+        </button>
+
+        <button onclick="showStats()">
+            Database Statistics
+        </button>
+
+        <button onclick="showDatabases()">
+            Show Databases
+        </button>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="card">
+        <h2>Dashboard</h2>
+
+        <div class="stats">
+            <div class="stat">
+                <h2 id="total">0</h2>
+                <p>Total Freelancers</p>
+            </div>
+
+            <div class="stat">
+                <h2 id="average">0</h2>
+                <p>Average Rate</p>
+            </div>
+
+            <div class="stat">
+                <h2 id="categories">0</h2>
+                <p>Categories</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- INSERT -->
+    <section class="card" id="insert">
+        <h2>Insert Freelancer</h2>
+
+        <input id="name" placeholder="Freelancer Name">
+
+        <input id="category" placeholder="Category (Web Design, Developer...)">
+
+        <input id="rate" type="number" placeholder="Hourly Rate">
+
+        <input id="experience" type="number" placeholder="Experience in Years">
+
+        <button onclick="insertOne()">
+            Insert One
+        </button>
+
+        <button onclick="insertMany()">
+            Insert Sample Records
+        </button>
+    </section>
+
+    <!-- RECORDS -->
+    <section class="card" id="records">
+        <h2>Freelancer Records</h2>
+
+        <input id="search" placeholder="Search by name..."
+        oninput="searchRecords()">
+
+        <button onclick="displayRecords(freelancers)">
+            Display All Records
+        </button>
+
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Rate</th>
+                        <th>Experience</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- QUERIES -->
+    <section class="card" id="queries">
+        <h2>Query Operations</h2>
+
+        <label>Search by Freelancer ID</label>
+        <input id="findId" type="number" placeholder="Enter ID">
+
+        <button onclick="findOne()">
+            Find One
+        </button>
+
+        <hr>
+
+        <label>Filter by Hourly Rate</label>
+
+        <select id="operator">
+            <option value="gt">Greater Than ($gt)</option>
+            <option value="lt">Less Than ($lt)</option>
+            <option value="gte">Greater Than or Equal ($gte)</option>
+            <option value="lte">Less Than or Equal ($lte)</option>
+        </select>
+
+        <input id="amount" type="number" placeholder="Enter rate">
+
+        <button onclick="filterRecords()">
+            Apply Filter
+        </button>
+
+        <hr>
+
+        <label>Filter by Category ($in)</label>
+
+        <select id="categoryFilter">
+            <option value="All">All Categories</option>
+            <option value="Web Developer">Web Developer</option>
+            <option value="Designer">Designer</option>
+            <option value="Content Writer">Content Writer</option>
+        </select>
+
+        <button onclick="filterCategory()">
+            Search Category
+        </button>
+
+        <hr>
+
+        <button onclick="sortRecords()">
+            Sort by Rate (Descending)
+        </button>
+
+        <button onclick="topThree()">
+            Display Top 3
+        </button>
+
+        <button onclick="countRecords()">
+            Count Documents
+        </button>
+    </section>
+
+    <!-- UPDATE -->
+    <section class="card" id="manage">
+        <h2>Update Freelancer</h2>
+
+        <input id="updateId" type="number"
+        placeholder="Enter Freelancer ID">
+
+        <input id="newRate" type="number"
+        placeholder="Enter New Hourly Rate">
+
+        <button onclick="updateOne()">
+            Update One
+        </button>
+
+        <button onclick="updateMany()">
+            Increase All Rates by 500
+        </button>
+    </section>
+
+    <!-- DELETE -->
+    <section class="card">
+        <h2>Delete Freelancer</h2>
+
+        <input id="deleteId" type="number"
+        placeholder="Enter Freelancer ID">
+
+        <button class="delete" onclick="deleteOne()">
+            Delete One
+        </button>
+
+        <button class="delete" onclick="deleteMany()">
+            Delete Rates Below 500
+        </button>
+    </section>
+
+    <!-- COMMAND OUTPUT -->
+    <section class="card">
+        <h2>MongoDB Command Output</h2>
+        <div id="log">
+            Welcome to FreelanceDB!
+            Select an operation to begin.
+        </div>
+    </section>
+
+</div>
+
+<footer style="background:#1e3a8a;color:white;text-align:center;padding:18px;">
+    <p>© 2026 FreelanceDB | Database Management System</p>
+</footer>
+
+<script>
+
+let freelancers = JSON.parse(
+    localStorage.getItem("freelancers")
+) || [];
+
+let nextId = Number(localStorage.getItem("nextId")) || 101;
+
+let databaseCreated = true;
+let collectionCreated = true;
+
+function saveData() {
+    localStorage.setItem(
+        "freelancers",
+        JSON.stringify(freelancers)
+    );
+
+    localStorage.setItem("nextId", nextId);
+}
+
+function message(text) {
+    document.getElementById("log").textContent = text;
+}
+
+function createDatabase() {
+    databaseCreated = true;
+    message('use FreelanceDB\nDatabase selected successfully.');
+}
+
+function createCollection() {
+    collectionCreated = true;
+    message('db.createCollection("freelancers")\nCollection created successfully.');
+}
+
+function insertOne() {
+
+    let name = document.getElementById("name").value.trim();
+    let category = document.getElementById("category").value.trim();
+    let rate = Number(document.getElementById("rate").value);
+    let experience = Number(document.getElementById("experience").value);
+
+    if (!name || !category ||
+        document.getElementById("rate").value === "" ||
+        document.getElementById("experience").value === "" ||
+        rate < 0 || experience < 0) {
+
+        alert("Please enter all valid details");
+        return;
+    }
+
+    let freelancer = {
+        id: nextId++,
+        name: name,
+        category: category,
+        rate: rate,
+        experience: experience
+    };
+
+    freelancers.push(freelancer);
+
+    saveData();
+    refresh();
+
+    message('db.freelancers.insertOne(' +
+        JSON.stringify(freelancer) + ')');
+
+    document.getElementById("name").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("rate").value = "";
+    document.getElementById("experience").value = "";
+}
+
+function insertMany() {
+
+    if (freelancers.length > 0 &&
+        !confirm("Add sample freelancer records?")) return;
+
+    let sample = [
+        ["Arun", "Web Developer", 1000, 3],
+        ["Priya", "Designer", 1500, 4],
+        ["Kumar", "Content Writer", 700, 2],
+        ["Divya", "Web Developer", 2000, 5],
+        ["Ravi", "Designer", 400, 1]
+    ];
+
+    let records = sample.map(item => ({
+        id: nextId++,
+        name: item[0],
+        category: item[1],
+        rate: item[2],
+        experience: item[3]
+    }));
+
+    freelancers.push(...records);
+
+    saveData();
+    refresh();
+
+    message("db.freelancers.insertMany(" +
+        JSON.stringify(records) + ")");
+}
+
+function displayRecords(data) {
+
+    let body = document.getElementById("tableBody");
+
+    body.innerHTML = "";
+
+    data.forEach(f => {
+
+        body.innerHTML += `
+            <tr>
+                <td>${f.id}</td>
+                <td>${f.name}</td>
+                <td>${f.category}</td>
+                <td>₹${f.rate}</td>
+                <td>${f.experience} years</td>
+            </tr>
+        `;
+    });
+
+    if (data.length === 0) {
+        body.innerHTML =
+            '<tr><td colspan="5">No records found</td></tr>';
+    }
+}
+
+function refresh() {
+
+    displayRecords(freelancers);
+
+    document.getElementById("total").textContent =
+        freelancers.length;
+
+    let avg = freelancers.length
+        ? freelancers.reduce((sum, f) => sum + f.rate, 0) /
+          freelancers.length
+        : 0;
+
+    document.getElementById("average").textContent =
+        Math.round(avg);
+
+    document.getElementById("categories").textContent =
+        new Set(freelancers.map(f => f.category)).size;
+}
+
+function searchRecords() {
+
+    let value = document.getElementById("search")
+        .value.toLowerCase();
+
+    let result = freelancers.filter(f =>
+        f.name.toLowerCase().includes(value)
+    );
+
+    displayRecords(result);
+
+    message('db.freelancers.find({ name: "' +
+        value + '" })');
+}
+
+function findOne() {
+
+    let id = Number(document.getElementById("findId").value);
+
+    let result = freelancers.find(f => f.id === id);
+
+    displayRecords(result ? [result] : []);
+
+    message('db.freelancers.findOne({ id: ' +
+        id + ' })\n' + JSON.stringify(result || null));
+}
+
+function filterRecords() {
+
+    let value = Number(document.getElementById("amount").value);
+    let op = document.getElementById("operator").value;
+
+    if (document.getElementById("amount").value === "") {
+        alert("Enter a rate");
+        return;
+    }
+
+    let result = freelancers.filter(f => {
+
+        if (op === "gt") return f.rate > value;
+        if (op === "lt") return f.rate < value;
+        if (op === "gte") return f.rate >= value;
+        if (op === "lte") return f.rate <= value;
+
+    });
+
+    displayRecords(result);
+
+    let operators = {
+        gt: "$gt",
+        lt: "$lt",
+        gte: "$gte",
+        lte: "$lte"
+    };
+
+    message('db.freelancers.find({ rate: { ' +
+        operators[op] + ': ' + value + ' } })');
+}
+
+function filterCategory() {
+
+    let category =
+        document.getElementById("categoryFilter").value;
+
+    let result = category === "All"
+        ? freelancers
+        : freelancers.filter(f => f.category === category);
+
+    displayRecords(result);
+
+    message('db.freelancers.find({ category: { $in: ["' +
+        category + '"] } })');
+}
+
+function sortRecords() {
+
+    let result = [...freelancers].sort(
+        (a, b) => b.rate - a.rate
+    );
+
+    displayRecords(result);
+
+    message("db.freelancers.find().sort({ rate: -1 })");
+}
+
+function topThree() {
+
+    let result = [...freelancers]
+        .sort((a, b) => b.rate - a.rate)
+        .slice(0, 3);
+
+    displayRecords(result);
+
+    message("db.freelancers.find().sort({ rate: -1 }).limit(3)");
+}
+
+function countRecords() {
+
+    message("db.freelancers.countDocuments()\nTotal Documents: " +
+        freelancers.length);
+}
+
+function updateOne() {
+
+    let id = Number(document.getElementById("updateId").value);
+    let rateInput = document.getElementById("newRate").value;
+    let rate = Number(rateInput);
+
+    if (rateInput === "" || rate < 0) {
+        alert("Enter a valid rate");
+        return;
+    }
+
+    let record = freelancers.find(f => f.id === id);
+
+    if (!record) {
+        alert("Freelancer not found");
+        return;
+    }
+
+    record.rate = rate;
+
+    saveData();
+    refresh();
+
+    message('db.freelancers.updateOne({ id: ' + id +
+        ' }, { $set: { rate: ' + rate + ' } })');
+}
+
+function updateMany() {
+
+    freelancers.forEach(f => {
+        f.rate += 500;
+    });
+
+    saveData();
+    refresh();
+
+    message('db.freelancers.updateMany({}, { $inc: { rate: 500 } })');
+}
+
+function deleteOne() {
+
+    let id = Number(document.getElementById("deleteId").value);
+
+    let oldLength = freelancers.length;
+
+    freelancers = freelancers.filter(f => f.id !== id);
+
+    if (oldLength === freelancers.length) {
+        alert("Freelancer not found");
+        return;
+    }
+
+    saveData();
+    refresh();
+
+    message('db.freelancers.deleteOne({ id: ' + id + ' })');
+}
+
+function deleteMany() {
+
+    let oldLength = freelancers.length;
+
+    freelancers = freelancers.filter(f => f.rate >= 500);
+
+    let deleted = oldLength - freelancers.length;
+
+    saveData();
+    refresh();
+
+    message('db.freelancers.deleteMany({ rate: { $lt: 500 } })\nDeleted: ' +
+        deleted + " documents");
+}
+
+function showStats() {
+
+    message(
+        "show dbs\n" +
+        "db.stats()\n" +
+        "db.freelancers.countDocuments()\n\n" +
+        "Database: FreelanceDB\n" +
+        "Collection: freelancers\n" +
+        "Total Documents: " + freelancers.length
+    );
+}
+
+function showDatabases() {
+
+    message("show dbs\nFreelanceDB");
+}
+
+// Initial display
+refresh();
+
+</script>
+
+</body>
+</html>
